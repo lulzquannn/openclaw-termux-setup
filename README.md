@@ -2,7 +2,7 @@
 
 Cài đặt **OpenClaw** (Personal AI Assistant) trên Android qua **Termux** chỉ với 1 lệnh duy nhất.
 
-Biến điện thoại cũ thành server AI cá nhân — truy cập Web UI từ trình duyệt bất kỳ.
+Biến điện thoại cũ thành server AI cá nhân — truy cập Web UI **từ bất kỳ đâu** qua Cloudflare Tunnel.
 
 ## ⚡ Cài đặt (1 lệnh)
 
@@ -21,10 +21,11 @@ curl -fsSL https://raw.githubusercontent.com/lulzquannn/openclaw-termux-setup/ma
 | 1 | Update & upgrade Termux packages |
 | 2 | Cài Node.js, Git, tmux, cronie, termux-api |
 | 3 | Cài OpenClaw (`npm i -g openclaw@latest`) |
-| 4 | Bật wake-lock (chống Android kill process) |
-| 5 | Tạo auto-start script (Termux:Boot) |
-| 6 | Tạo helper scripts (start/stop/status) |
-| 7 | Tạo config mặc định (bind 0.0.0.0 cho LAN) |
+| 4 | Cài **Cloudflare Tunnel** (cloudflared) — tạo URL public miễn phí |
+| 5 | Bật wake-lock (chống Android kill process) |
+| 6 | Tạo auto-start script (Termux:Boot) |
+| 7 | Tạo helper scripts (start/stop/status/url/restart) |
+| 8 | Tạo config mặc định (bind 0.0.0.0) |
 
 ## 🚀 Sau khi cài xong
 
@@ -34,30 +35,41 @@ openclaw onboard
 ```
 Nó sẽ hỏi bạn API key (Anthropic/OpenAI) và setup Telegram/WhatsApp bot.
 
-### Bước 2: Start gateway
+### Bước 2: Start gateway + tunnel
 ```bash
 ~/openclaw-start.sh
 ```
 
-### Bước 3: Mở Web UI
-Từ máy tính/điện thoại khác **cùng WiFi**, mở trình duyệt:
-```
-http://<IP-điện-thoại>:18789
+### Bước 3: Lấy URL public
+```bash
+~/openclaw-url.sh
 ```
 
-Kiểm tra IP bằng:
-```bash
-~/openclaw-status.sh
+Bạn sẽ nhận được URL dạng:
 ```
+https://random-name.trycloudflare.com
+```
+
+**Mở URL này trên bất kỳ trình duyệt nào, ở bất kỳ đâu — không cần chung WiFi!**
+
+## 🌐 Cách truy cập
+
+| Cách | URL | Yêu cầu |
+|------|-----|---------|
+| **Public (từ bất kỳ đâu)** | `https://xxxxx.trycloudflare.com` | Không cần gì |
+| **LAN (cùng WiFi)** | `http://<IP-điện-thoại>:18789` | Cùng mạng WiFi |
 
 ## 🎮 Helper Commands
 
 | Lệnh | Chức năng |
 |-------|-----------|
-| `~/openclaw-start.sh` | Khởi động OpenClaw Gateway |
-| `~/openclaw-stop.sh` | Dừng OpenClaw |
-| `~/openclaw-status.sh` | Xem trạng thái + IP + URL |
-| `tmux attach -t openclaw` | Xem logs realtime |
+| `~/openclaw-start.sh` | Khởi động Gateway + Tunnel |
+| `~/openclaw-stop.sh` | Dừng tất cả |
+| `~/openclaw-restart.sh` | Restart tất cả |
+| `~/openclaw-status.sh` | Xem trạng thái đầy đủ |
+| `~/openclaw-url.sh` | Lấy URL public hiện tại |
+| `tmux attach -t openclaw` | Xem gateway logs |
+| `tmux attach -t tunnel` | Xem tunnel logs |
 | `Ctrl+B` rồi `D` | Thoát tmux (giữ chạy nền) |
 
 ## 📱 Cấu hình MIUI / Android để chạy 24/7
@@ -75,15 +87,14 @@ Kiểm tra IP bằng:
 - Cài **Termux:Boot** từ F-Droid
 - Script auto-start đã được tạo sẵn tại `~/.termux/boot/`
 
-## 💰 Chi phí API
+## 💰 Chi phí
 
-OpenClaw miễn phí, nhưng cần API key để gọi model AI:
-
-| Model | Chi phí ước tính |
-|-------|-----------------|
-| Claude 3.5 Haiku | ~$0.01-0.05/ngày |
-| GPT-4o-mini | ~$0.01-0.05/ngày |
-| Google Gemini Flash | Có free tier |
+| Thành phần | Chi phí |
+|------------|---------|
+| OpenClaw | **Miễn phí** (open-source) |
+| Cloudflare Tunnel | **Miễn phí** |
+| API key (Claude Haiku / GPT-4o-mini) | ~$0.01-0.05/ngày |
+| Google Gemini Flash | Có **free tier** |
 
 ## 📁 Cấu trúc file
 
@@ -91,27 +102,29 @@ OpenClaw miễn phí, nhưng cần API key để gọi model AI:
 ~/.openclaw/
 ├── openclaw.json          # Config chính
 ├── workspace/             # Skills, prompts
-│   ├── AGENTS.md
-│   ├── SOUL.md
-│   └── skills/
 └── credentials/           # Channel credentials
 
 ~/
-├── openclaw-start.sh      # Start script
-├── openclaw-stop.sh       # Stop script
-├── openclaw-status.sh     # Status script
+├── openclaw-start.sh      # Start gateway + tunnel
+├── openclaw-stop.sh       # Stop everything
+├── openclaw-restart.sh    # Restart everything
+├── openclaw-status.sh     # Check status
+├── openclaw-url.sh        # Get public URL
+├── tunnel.log             # Tunnel log (auto-created)
+├── tunnel-url.txt         # Saved public URL
 └── .termux/boot/
     └── start-openclaw.sh  # Auto-start on boot
 ```
 
-## ⚠️ Hạn chế khi chạy trên Android
+## ⚠️ Lưu ý
 
+- 🔄 **URL public thay đổi** mỗi khi restart tunnel (Cloudflare free tier). Chạy `~/openclaw-url.sh` để lấy URL mới.
 - ❌ Không có browser control (Playwright không hỗ trợ Android)
-- ❌ Android có thể kill process nếu không config đúng
 - ⚠️ Nóng máy nếu chạy lâu — để nơi thoáng, cắm sạc
 - ✅ Chat, email, calendar, skills, cron jobs hoạt động bình thường
 - ✅ Web UI / WebChat hoạt động
 - ✅ Telegram, WhatsApp, Discord... hoạt động
+- ✅ Truy cập từ bất kỳ đâu qua Cloudflare Tunnel
 
 ## 🔗 Links
 
