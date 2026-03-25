@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # ============================================
 # 🦞 OpenClaw Auto Setup for Termux (Android)
-# One-liner: curl -fsSL https://raw.githubusercontent.com/<YOUR_GITHUB>/openclaw-termux-setup/main/setup.sh | bash
+# One-liner: curl -fsSL https://raw.githubusercontent.com/lulzquannn/openclaw-termux-setup/master/setup.sh | bash
 # ============================================
 
 set -e

@@ -9,7 +9,7 @@ Biến điện thoại cũ thành server AI cá nhân — truy cập Web UI từ
 Mở **Termux** và paste:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<YOUR_GITHUB>/openclaw-termux-setup/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/lulzquannn/openclaw-termux-setup/master/setup.sh | bash
 ```
 
 > ⚠️ **Phải cài Termux từ [F-Droid](https://f-droid.org/)**, KHÔNG dùng Google Play Store (bản cũ, lỗi).
